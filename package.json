@@ -1,0 +1,31 @@
+{
+  "name": "devtinder-api",
+  "version": "1.0.0",
+  "description": "tinder for dev",
+  "keywords": [
+    "nodejs",
+    "javascript"
+  ],
+  "homepage": "https://github.com/CodeRAFCE/devtinder-api#readme",
+  "bugs": {
+    "url": "https://github.com/CodeRAFCE/devtinder-api/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeRAFCE/devtinder-api.git"
+  },
+  "license": "ISC",
+  "author": "Seshan A",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon ./src/app.js"
+  },
+  "dependencies": {
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
