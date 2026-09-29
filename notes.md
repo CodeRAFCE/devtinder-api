@@ -51,9 +51,9 @@ res.send({ firstName: "Seshan", lastName: "A" });
 
 # How express handles request behind the scene
 
-1) Client send a request to the server and the server has to respond back with a data
-2) So during Req-Res Cycle a TCP handshake is established created a socket for sending-receiveing packets of data.
-3) Once the req has reached the server Node HTTP-server, Express processes that behind the scene and expose that as req, res & next() as our handler functions.
-4) And expressjs will process all our route handler and middleware untill the response is sent back to client
-5) Only after all the middlewares are executed the response is sent back and that in developers control
-[REQ] <-> [VerifyUser Middleware] <-> [RES]
+1. Client send a request to the server and the server has to respond back with a data
+2. So during Req-Res Cycle a TCP handshake is established created a socket for sending-receiveing packets of data.
+3. Once the req has reached the server Node HTTP-server, Express processes that behind the scene and expose that as req, res & next() as our handler functions.
+4. And expressjs will process all our route handler and middleware untill the response is sent back to client
+5. Only after all the middlewares are executed the response is sent back and that in developers control
+   [REQ] <-> [VerifyUser Middleware] - [`VERIFY YES/NO`] <-> [RES]
