@@ -4,6 +4,10 @@ const { connectDB } = require("./config/database");
 const app = express();
 const PORT = 3000;
 
+app.post("/sign-up", (req, res) => {
+  
+});
+
 // * Always connect to DB and then listen to the server
 connectDB()
   .then(() => {
