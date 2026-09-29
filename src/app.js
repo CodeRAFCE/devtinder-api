@@ -10,22 +10,20 @@ app.use("/health-check", (req, res) => {
   res.send("Server is Healthy in port 3000");
 });
 
-// Older route techniques
-// app.get("/use?r", (req, res) => {
-//   res.send({ firstName: "Seshan", lastName: "A" });
-// });
-
-// Express 5 completely upgraded its route parsing engine
-//You cannot use regex quantifiers directly inside route path strings anymore.
-// To fix this pass a real JavaScript RegExp literal instead of a string:
-app.get(/^\/use?r$/, (req, res) => {
-  res.send({ firstName: "Seshan", lastName: "A" });
-});
-
-// app.use("/", (req, res) => {
-//   res.send("Any route with prefix / will execute depending on the order");
-// });
+app.use(
+  "/user",
+  (req, res, next) => {
+    console.log("Handling 1st request");
+    next();
+    res.send("1st method");
+  },
+  (req, res) => {
+    console.log("2nd method");
+    res.send("2nd Response"); // ERROR: Cannot set headers after they are sent to the client
+  },
+);
 
 app.listen(PORT, () => {
   console.log(`Server starting in port => ${PORT}`);
 });
+ 
