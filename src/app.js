@@ -8,6 +8,7 @@ const { isNonEmptyObject } = require("./utils/checks");
 const app = express();
 const PORT = 3000;
 
+// middleware to covert your all json data to JS object so req.body is not undefined
 app.use(express.json());
 
 app.post("/sign-up", async (req, res) => {
@@ -26,6 +27,66 @@ app.post("/sign-up", async (req, res) => {
     console.error("Sign-up error:", error.message);
     res.status(400).send("Something went wrong: " + error.message);
   }
+});
+
+app.get("/users", async (req, res) => {
+  try {
+    const users = await User.find({});
+    if (users.length === 0) {
+      return res.status(404).send("User not found!");
+    } else {
+      res.json(users);
+    }
+  } catch (error) {
+    res.status(400).send("Error finding the email");
+  }
+});
+
+app.get("/users/:id", async (req, res) => {
+  const id = req.params.id;
+  try {
+    const user = await User.findById(id);
+    if (!isNonEmptyObject(user)) {
+      return res.status(404).send("User not found");
+    } else {
+      res.send(user);
+    }
+  } catch (error) {
+    res.status(400).send("Error finding the user");
+  }
+});
+
+app.patch("/users/:id", async (req, res) => {
+  const id = req.params.id;
+  const data = req.body;
+  if (!isNonEmptyObject(data)) {
+    return res.status(400).json({ error: "Request body cannot be empty." });
+  }
+
+  try {
+    const user = await User.findByIdAndUpdate(id, data, {
+      runValidators: true,
+    });
+    if (!isNonEmptyObject(user)) {
+      return res.status(404).send("User not found");
+    } else {
+      res.send("User is updated");
+    }
+  } catch (error) {
+    return res.status(400).json({ error: "Error when updating the user" });
+  }
+});
+
+app.delete("/users/:id", async (req, res) => {
+  const id = req.params.id;
+  if (id) {
+    return res.status(404).send("User id not found");
+  }
+
+  try {
+    await User.findByIdAndDelete(id);
+    res.send("User deleted successfully");
+  } catch (error) {}
 });
 
 // * Always connect to DB and then listen to the server
