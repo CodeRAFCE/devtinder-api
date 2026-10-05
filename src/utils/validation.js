@@ -12,14 +12,4 @@ const validateSignUpData = (req) => {
   }
 };
 
-const validateLoginData = (req) => {
-  const { emailId, password } = req.body;
-
-  if (!validator.isEmail(emailId)) {
-    throw new Error("Email id is invalid");
-  } else if (!validator.isStrongPassword(password)) {
-    throw new Error("Password is weak, Please enter strong password");
-  }
-};
-
 module.exports = { validateSignUpData };
