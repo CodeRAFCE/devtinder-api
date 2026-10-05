@@ -1,9 +1,11 @@
 require("dotenv").config();
 
 const express = require("express");
+const bcrypt = require("bcrypt");
 const User = require("./models/user");
 const { connectDB } = require("./config/database");
 const { isNonEmptyObject } = require("./utils/checks");
+const { validateSignUpData } = require("./utils/validation");
 
 const app = express();
 const PORT = 3000;
@@ -13,21 +15,45 @@ const PORT = 3000;
 app.use(express.json());
 
 app.post("/sign-up", async (req, res) => {
-  const { firstName, lastName, emailId, password } = req.body;
-
-  // Optional: Basic presence check (Mongoose schema also validates required fields)
-  if (!firstName || !emailId || !password) {
-    return res.status(400).json({ error: "Missing required fields" });
-  }
-
-  // Only allowed fields are passed to the model
-  const user = new User({ firstName, lastName, emailId, password });
   try {
+    validateSignUpData(req);
+    const { firstName, lastName, emailId, password } = req.body;
+    const passwardHash = await bcrypt.hash(password, 10);
+
+    // Only allowed fields are passed to the model
+    const user = new User({
+      firstName,
+      lastName,
+      emailId,
+      password: passwardHash,
+    });
+
     await user.save();
     res.status(201).send("User added successfully!");
   } catch (error) {
-    console.error("Sign-up error:", error.message);
-    res.status(400).send("Something went wrong: " + error.message);
+    console.error("ERROR: ", error.message);
+    res.status(400).send("ERROR: " + error.message);
+  }
+});
+
+app.post("/login", async (req, res) => {
+  try {
+    const { emailId, password } = req.body;
+
+    const user = await User.findOne({ emailId });
+    if (!user) {
+      throw new Error("ERROR: INVALID CREDENTIALS");
+    }
+
+    const isPassword = await bcrypt.compare(password, user.password);
+
+    if (isPassword) {
+      res.send("Logged in");
+    } else {
+      throw new Error("ERROR: INVALID CREDENTIALS");
+    }
+  } catch (error) {
+    throw new Error("ERROR:" + error);
   }
 });
 

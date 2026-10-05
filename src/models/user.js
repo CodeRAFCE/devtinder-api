@@ -12,7 +12,7 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
       validate(value) {
-        if (validator.isEmail(value))
+        if (!validator.isEmail(value))
           throw new Error("Invalid email address:" + value);
       },
     },
@@ -20,7 +20,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       validate(value) {
-        if (validator.isStrongPassword)
+        if (!validator.isStrongPassword)
           throw new Error("Provide a strong password");
       },
     },
@@ -28,9 +28,10 @@ const userSchema = new mongoose.Schema(
     gender: { type: String, enum: ["male", "female"] },
     photoUrl: {
       type: String,
-      default: "https://uxwing.com/developer-icon/",
+      default:
+        "https://d38we5ntdyxyje.cloudfront.net/858987/profile/GJQSELLC_avatar_medium_square.jpg",
       validate(value) {
-        if (validator.isURL(value))
+        if (!validator.isURL(value))
           throw new Error("Invalid URL format:" + value);
       },
     },
