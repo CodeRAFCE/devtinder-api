@@ -4,10 +4,11 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
+
 const User = require("./models/user");
 const { connectDB } = require("./config/database");
-const { isNonEmptyObject } = require("./utils/checks");
 const { validateSignUpData } = require("./utils/validation");
+const { userAuth } = require("./middlewares/auth");
 
 const app = express();
 const PORT = 3000;
@@ -56,8 +57,14 @@ app.post("/login", async (req, res) => {
     if (isPassword) {
       // TODO: Create a token
       // TODO: Add the token to cookie and send the response back to the user
-      const token = await jwt.sign({ _id: user._id }, "DEV@Tinder#1022");
-      res.cookie("token", token);
+      const token = await jwt.sign({ _id: user._id }, "DEV@Tinder#1022", {
+        expiresIn: "1d",
+      });
+      res.cookie("token", token, {
+        expires: new Date(Date.now() + 24 * 3600000), // expires in 1h, change 1 to 24 will expire in 1d
+        httpOnly: true,
+      });
+
       res.send("Logged in");
     } else {
       throw new Error("ERROR: INVALID CREDENTIALS");
@@ -67,22 +74,9 @@ app.post("/login", async (req, res) => {
   }
 });
 
-app.get("/profile", async (req, res) => {
+app.get("/profile", userAuth, async (req, res) => {
   try {
-    const cookies = req.cookies;
-    const { token } = cookies;
-
-    if (!token) {
-      throw new Error("ERROR: INVALID TOKEN");
-    }
-
-    const userData = await jwt.verify(token, "DEV@Tinder#1022");
-    const { _id } = userData;
-
-    const user = await User.findById(_id);
-    if (!user) {
-      throw new Error("ERROR: USER DOES NOT EXIST"); 
-    }
+    const user = req.user;
 
     res.send(user);
   } catch (error) {
@@ -90,86 +84,14 @@ app.get("/profile", async (req, res) => {
   }
 });
 
-app.get("/users", async (req, res) => {
+app.post("/sendConnectionRequest", userAuth, async (req, res) => {
   try {
-    const users = await User.find({});
-    if (users.length === 0) {
-      return res.status(404).send("User not found!");
-    } else {
-      res.json(users);
-    }
+    const user = req.user;
+
+    res.send("Connection request sent");
   } catch (error) {
-    res.status(400).send("Error finding the email");
+    throw new Error("ERROR: " + error.message);
   }
-});
-
-app.get("/users/:id", async (req, res) => {
-  const id = req.params.id;
-  try {
-    const user = await User.findById(id);
-    if (!isNonEmptyObject(user)) {
-      return res.status(404).send("User not found");
-    } else {
-      res.send(user);
-    }
-  } catch (error) {
-    res.status(400).send("Error finding the user");
-  }
-});
-
-app.patch("/users/:id", async (req, res) => {
-  const id = req.params?.id;
-  const data = req.body;
-  if (!isNonEmptyObject(data)) {
-    return res.status(400).json({ error: "Request body cannot be empty." });
-  }
-
-  if (data?.skills.length > 10) {
-    throw new Error("Skills limit exceeded");
-  }
-
-  const ALLOWED_UPDATES = [
-    "firstName",
-    "lastName",
-    "skills",
-    "photoUrl",
-    "gender",
-    "about",
-  ];
-
-  try {
-    const isAllowedUpdates = Object.keys(data).every((k) =>
-      ALLOWED_UPDATES.includes(k),
-    );
-
-    if (!isAllowedUpdates) {
-      throw new Error("Update not allowed");
-    }
-    const user = await User.findByIdAndUpdate(id, data, {
-      runValidators: true,
-    });
-    if (!isNonEmptyObject(user)) {
-      return res.status(404).send("User not found");
-    } else {
-      res.send("User is updated");
-    }
-  } catch (error) {
-    res
-      .status(400)
-      .json({ error: "Error when updating the user", errData: error });
-  }
-});
-
-app.delete("/users/:id", async (req, res) => {
-  const id = req.params.id;
-  if (id) {
-    return res.status(404).send("User id not found");
-  }
-
-  try {
-    await User.findByIdAndDelete(id);
-    res.send("User deleted successfully");
-  } catch (error) {}
 });
 
 // * Always connect to DB and then listen to the server
