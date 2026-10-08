@@ -3,7 +3,6 @@ require("dotenv").config();
 const express = require("express");
 const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
-const jwt = require("jsonwebtoken");
 
 const User = require("./models/user");
 const { connectDB } = require("./config/database");
@@ -52,14 +51,12 @@ app.post("/login", async (req, res) => {
       throw new Error("ERROR: INVALID CREDENTIALS");
     }
 
-    const isPassword = await bcrypt.compare(password, user.password);
+    const isPassword = user.validatePassword(password);
 
     if (isPassword) {
-      // TODO: Create a token
-      // TODO: Add the token to cookie and send the response back to the user
-      const token = await jwt.sign({ _id: user._id }, "DEV@Tinder#1022", {
-        expiresIn: "1d",
-      });
+      // Offloaded the jwt login to user schema
+      const token = await user.getJWT();
+
       res.cookie("token", token, {
         expires: new Date(Date.now() + 24 * 3600000), // expires in 1h, change 1 to 24 will expire in 1d
         httpOnly: true,
