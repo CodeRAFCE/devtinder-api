@@ -2,6 +2,7 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const User = require("../models/user");
 const { validateSignUpData } = require("../utils/validation");
+const { userAuth } = require("../middlewares/auth");
 
 const authRouter = express.Router();
 
@@ -34,10 +35,10 @@ authRouter.post("/login", async (req, res) => {
     const user = await User.findOne({ emailId });
 
     if (!user) {
-      throw new Error("ERROR: INVALID CREDENTIALS");
+      throw new Error("INVALID CREDENTIALS");
     }
 
-    const isPassword = user.validatePassword(password);
+    const isPassword = await user.validatePassword(password);
 
     if (isPassword) {
       // Offloaded the jwt login to user schema
@@ -50,11 +51,17 @@ authRouter.post("/login", async (req, res) => {
 
       res.send("Logged in");
     } else {
-      throw new Error("ERROR: INVALID CREDENTIALS");
+      throw new Error("INVALID CREDENTIALS");
     }
   } catch (error) {
-    throw new Error("ERROR:" + error);
+    throw new Error("ERROR:" + error.message);
   }
+});
+
+authRouter.post("/logout", userAuth, (req, res) => {
+  res
+    .cookie("token", null, { expires: new Date(Date.now()) })
+    .send("Logout successful");
 });
 
 module.exports = authRouter;

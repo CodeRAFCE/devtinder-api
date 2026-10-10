@@ -12,4 +12,32 @@ const validateSignUpData = (req) => {
   }
 };
 
-module.exports = { validateSignUpData };
+const validateProfileEditData = (req) => {
+  const { about, skills, photoUrl } = req.body;
+
+  const allowedEditFields = [
+    "firstName",
+    "lastName",
+    "skills",
+    "photoUrl",
+    "gender",
+    "age",
+    "about",
+  ];
+
+  if (about && about.length > 300) {
+    throw new Error("about character limit exceeded");
+  } else if (skills && skills.length > 10) {
+    throw new Error("skills limit exceeded");
+  } else if (photoUrl && !validator.isURL(photoUrl)) {
+    throw new Error("Incorrect photoUrl format");
+  }
+
+  const isProfileEditAllowed = Object.keys(req.body).every((field) =>
+    allowedEditFields.includes(field),
+  );
+
+  return isProfileEditAllowed;
+};
+
+module.exports = { validateSignUpData, validateProfileEditData };
